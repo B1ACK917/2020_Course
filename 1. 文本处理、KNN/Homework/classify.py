@@ -110,7 +110,7 @@ class KNN:
         VecLen = len(x_vec)
         Result, Inner = 0, 0
         for i in range(VecLen):
-            Inner += (x_vec[i] - y_vec[i]) ** p
+            Inner += math.fabs(x_vec[i] - y_vec[i]) ** p
         Result = Inner ** (1 / p)
         return Result
 
@@ -232,4 +232,4 @@ if __name__ == '__main__':
                 file.write(str(x) + '\n')
                 file.write(str(y))
 
-#2923
+#35589
