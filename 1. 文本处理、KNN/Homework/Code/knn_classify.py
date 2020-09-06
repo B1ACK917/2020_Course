@@ -170,7 +170,7 @@ class KNN:
             text = file.readlines()
             for line in text:
                 target = line.replace('\n', '').split(',')
-                x_pre.append(target[0].split(' '))
+                x_pre.append(target[1].split(' '))
         self.x_Test, _, __ = self.make_tfidf_mat(x_pre, self.WordDict, self.WordList)
 
     def get_k_nearest(self, x):
@@ -202,10 +202,10 @@ class KNN:
         self.load_train()
         self.load_validation()
         self.load_test()
-        self.y_Predict = [0 for i in range(len(self.x_Valid if self.mode=='train' else self.x_Test))]
-        for i in range(len(self.x_Valid if self.mode=='train' else self.x_Test)):
+        self.y_Predict = [0 for i in range(len(self.x_Valid if self.mode == 'train' else self.x_Test))]
+        for i in range(len(self.x_Valid if self.mode == 'train' else self.x_Test)):
             VoteDict = {}
-            KNeighbour = self.get_k_nearest(self.x_Valid[i] if self.mode=='train' else self.x_Test[i])
+            KNeighbour = self.get_k_nearest(self.x_Valid[i] if self.mode == 'train' else self.x_Test[i])
             for neighbour in KNeighbour:
                 Vote = self.y_Train[neighbour[1]]
                 if Vote not in VoteDict:
@@ -220,6 +220,7 @@ class KNN:
                     Max = value
                     Result = key
             self.y_Predict[i] = Result
+
 
 def Search():
     KBegin, KEnd = 1, 31
@@ -241,23 +242,26 @@ def Search():
                 file.write(str(x) + '\n')
                 file.write(str(y))
 
-def Run(K,Weight,Algo):
-    x, y = [], []
+
+def Run(K, Weight, Algo):
     begin = time.perf_counter()
     print(
-        'Running KNN Model With Arg K = {}, Distance Algorithm is {}, Voting With Weight is {}'.format(
+        'Running KNN-Classify Model With Arg K = {}, Distance Algorithm is {}, Voting With Weight is {}'.format(
             K, Algo, 'Used' if Weight else 'Not Used'))
     Model = KNN('train_set.csv', 'validation_set.csv', 'test_set.csv', K=K, distance_rule=Algo,
-                vote_rule=Weight,run_mode='predict')
+                vote_rule=Weight, run_mode='predict')
     Model.run()
-    Predict=Model.get_predict()
+    Predict = Model.get_predict()
     print(Predict)
-    print('Training Completed, Average Time: {} s'.format(time.perf_counter() - begin / len(x)))
-    with open(r'result/classify_result_{}_Weight-{}.txt'.format(Algo, Weight), 'w') as file:
-        file.write(str(x) + '\n')
-        file.write(str(y))
+    print('Training Completed, Time: {} s'.format(time.perf_counter() - begin))
+    with open(r'result/Data/KNN_Clasify/18340040_FengDawei_KNN_classification.csv', 'w') as file:
+        file.write('textid,label\n')
+        for i in range(len(Predict)):
+            file.write('{},{}\n'.format(i + 1, Predict[i]))
+
 
 if __name__ == '__main__':
-
+    # Search()
+    Run(10, True, 'L1')
 
 # 521

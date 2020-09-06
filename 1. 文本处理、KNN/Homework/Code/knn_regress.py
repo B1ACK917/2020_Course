@@ -177,7 +177,7 @@ class KNN:
             text = file.readlines()
             for line in text:
                 target = line.replace('\n', '').split(',')
-                x_pre.append(target[0].split(' '))
+                x_pre.append(target[1].split(' '))
         self.x_Test, _, __ = self.make_tfidf_mat(x_pre, self.WordDict, self.WordList)
 
     def get_k_nearest(self, x):
@@ -234,7 +234,7 @@ class KNN:
             self.y_Predict[i] = Result
 
 
-if __name__ == '__main__':
+def Search():
     KBegin, KEnd = 1, 31
     for Weight in [False, True]:
         for Algo in ['L1', 'L2', 'L3', 'Cos']:
@@ -254,4 +254,27 @@ if __name__ == '__main__':
                 file.write(str(x) + '\n')
                 file.write(str(y))
 
+
+def Run(K, Weight, Algo):
+    begin = time.perf_counter()
+    print(
+        'Running KNN-Regress Model With Arg K = {}, Distance Algorithm is {}, Voting With Weight is {}'.format(
+            K, Algo, 'Used' if Weight else 'Not Used'))
+    Model = KNN('train_set.csv', 'validation_set.csv', 'test_set.csv', K=K, distance_rule=Algo,
+                vote_rule=Weight, run_mode='predict')
+    Model.run()
+    Predict = Model.get_predict()
+    print(Predict)
+    print('Training Completed, Time: {} s'.format(time.perf_counter() - begin))
+    with open(r'result/Data/KNN_Regress/18340040_FengDawei_KNN_regression.csv.csv', 'w') as file:
+        file.write('textid,anger,disgust,fear,joy,sad,surprise\n')
+        for i in range(len(Predict)):
+            file.write(
+                '{},{},{},{},{},{},{}\n'.format(i + 1, Predict[i][0], Predict[i][1], Predict[i][2], Predict[i][3],
+                                                Predict[i][4], Predict[i][5]))
+
+
+if __name__ == '__main__':
+    # Search()
+    Run(10, True, 'L1')
 # 31909
