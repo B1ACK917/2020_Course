@@ -20,8 +20,8 @@ def make_tfidf_mat(data):
     for word in WordDict.keys():
         WordList.append(word)
     WordList = sorted(WordList)
-    IDF_MAT = [0 for i in range(len(WordDict))]
-    TF_MAT = [[0 for i in range(len(WordDict))] for i in range(len(data))]
+    IDF_MAT = [0.0 for i in range(len(WordDict))]
+    TF_MAT = [[0.0 for i in range(len(WordDict))] for i in range(len(data))]
     for i in range(len(data)):
         Target = data[i]
         LocalDict = {}
