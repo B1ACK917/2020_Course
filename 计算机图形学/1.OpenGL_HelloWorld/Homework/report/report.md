@@ -1,5 +1,7 @@
 # Assignment 0: Introduction to OpenGL
 
+<p align="right"> 18340040 冯大纬
+
 ## 实验要求
 
 1. 什么是OpenGL？OpenGL与计算机图形学的关系是什么？
