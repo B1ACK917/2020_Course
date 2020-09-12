@@ -18,19 +18,7 @@
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Hello Window.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Hello Triangle.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Shaders.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Textures.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Textures_2.cpp">
+    <ClCompile Include="hw1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
