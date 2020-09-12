@@ -25,31 +25,31 @@
 
    ### 实验截图
 
-   ![1](F:\Code\Graphic_Course\HW1\result\1.jpg)
+   ![1](../result/1.jpg)
 
    <center>图1  你好，窗口完成截图</center>
 
-   ![2](F:\Code\Graphic_Course\HW1\result\2.jpg)
+   ![2](../result/2.jpg)
 
    <center>图2  你好，三角形完成截图</center>
 
-   ![3](F:\Code\Graphic_Course\HW1\result\3.jpg)
+   ![3](../result/3.jpg)
 
    <center>图3  你好，三角形（Part 2）完成截图</center>
 
-   ![4](F:\Code\Graphic_Course\HW1\result\4.jpg)
+   ![4](../result/4.jpg)
 
    <center>图4  你好，三角形（Part 3）完成截图</center>
 
-   ![](F:\Code\Graphic_Course\HW1\result\5.png)
+   ![](../result/5.png)
 
    <center>图5  着色器完成截图</center>
 
-   ![image-20200912104126281](F:\Code\Graphic_Course\HW1\result\6.png)
+   ![image-20200912104126281](../result/6.png)
 
    <center>图6  着色器（Part 2）完成截图</center>
 
-   ![image-20200912123419555](F:\Code\Graphic_Course\HW1\result\7.png)
+   ![image-20200912123419555](../result/7.png)
 
    <center>图7  纹理完成截图</center>
 
@@ -59,7 +59,7 @@
    
    ### 实验截图
 
-   ![image-20200912125831832](F:\Code\Graphic_Course\HW1\result\8.png)
+   ![image-20200912125831832](../result/8.png)
    
    <center>图8  完成截图</center>
    
