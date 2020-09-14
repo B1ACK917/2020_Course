@@ -1,11 +1,12 @@
+# coding=utf-8
 import math
 import time
 
 
 class KNN:
     def __init__(self, train_path, valid_path, test_path, K, distance_rule, vote_rule, run_mode='train'):
-        '''
-
+        """
+        构造函数
         :param train_path:  The Path Where you stored the Training Data
         :param valid_path: The Path Where you stored the Validation Data
         :param test_path: The Path Where you stored the Testing Data
@@ -13,7 +14,7 @@ class KNN:
         :param distance_rule: 'Lp' or 'Cos'
         :param vote_rule: Whether to Vote Using Distance, Chosen from True or False
         :param run_mode: Chosen from ['train','predict']
-        '''
+        """
         self.TrainDataPath = train_path
         self.ValidationDataPath = valid_path
         self.TestDataPath = test_path
@@ -47,6 +48,12 @@ class KNN:
 
     @staticmethod
     def mult(a, b):
+        """
+        向量点乘
+        :param a: 一个列表，表示向量a
+        :param b: 一个列表，表示向量b
+        :return: 向量a点乘b的结果
+        """
         c = [0 for i in range(len(a))]
         for i in range(len(a)):
             c[i] = a[i] * b[i]
@@ -54,6 +61,13 @@ class KNN:
 
     @classmethod
     def make_tfidf_mat(cls, data, WordDict, WordList):
+        """
+        生成TF-IDF矩阵
+        :param data: 一个列表，每一行是一个句子
+        :param WordDict: 词表
+        :param WordList: 词位置
+        :return: TF-IDF矩阵
+        """
         if WordDict is None or WordList is None:
             WordDict, WordList = {}, []
             for Target in data:
@@ -113,6 +127,13 @@ class KNN:
 
     @staticmethod
     def Lp_Norm(x_vec, y_vec, p):
+        """
+        Lp范数求取函数
+        :param x_vec: 特征向量x
+        :param y_vec: 特征向量y
+        :param p: 要求取的范数p值
+        :return: x_vec-y_vec的Lp范数
+        """
         VecLen = len(x_vec)
         Result, Inner = 0, 0
         for i in range(VecLen):
@@ -122,6 +143,12 @@ class KNN:
 
     @staticmethod
     def Cos_Distance(x_vec, y_vec):
+        """
+        余弦距离求取函数
+        :param x_vec: 特征向量x
+        :param y_vec: 特征向量y
+        :return: x_vec和y_vec的余弦距离
+        """
         VecLen = len(x_vec)
         Result, DivA, VecDisA, VecDisB = 0, 0, 0, 0
         for i in range(VecLen):
@@ -133,6 +160,11 @@ class KNN:
         return Result
 
     def Smooth_Method(self, x):
+        """
+        激活函数
+        :param x: 原数据x
+        :return: 激活后的x
+        """
         if self.VoteRule == 'log':
             return math.log(x)
         elif self.VoteRule == 'square':
@@ -144,12 +176,21 @@ class KNN:
 
     @staticmethod
     def calculate_accuracy(y_predict, y_label):
+        """
+        计算准确率
+        :param y_predict: KNN给出的预测结果
+        :param y_label: 真实标签
+        :return: 预测结果的准确率
+        """
         cnt = 0
         for i in range(len(y_predict)):
             cnt += (1 if y_predict[i] == y_label[i] else 0)
         return cnt / len(y_predict)
 
     def load_train(self):
+        """
+        读取训练集
+        """
         self.y_Train, x_pre = [], []
         with open(r'./lab1_data/classification_dataset/{}'.format(self.TrainDataPath), 'r') as file:
             file.readline()
@@ -163,6 +204,9 @@ class KNN:
             self.__K = int(math.sqrt(len(self.x_Train)))
 
     def load_validation(self):
+        """
+        读取验证集
+        """
         self.y_Valid, x_pre = [], []
         with open(r'./lab1_data/classification_dataset/{}'.format(self.ValidationDataPath), 'r') as file:
             file.readline()
@@ -174,6 +218,9 @@ class KNN:
         self.x_Valid, _, __ = self.make_tfidf_mat(x_pre, self.WordDict, self.WordList)
 
     def load_test(self):
+        """
+        读取测试集
+        """
         self.y_Test, x_pre = [], []
         with open(r'./lab1_data/classification_dataset/{}'.format(self.TestDataPath), 'r') as file:
             file.readline()
@@ -184,6 +231,11 @@ class KNN:
         self.x_Test, _, __ = self.make_tfidf_mat(x_pre, self.WordDict, self.WordList)
 
     def get_k_nearest(self, x):
+        """
+        获取和x最近的K个邻居
+        :param x: 特征向量x
+        :return: 一个列表，列表元素为元组，元组包含两个值：距离、该邻居在训练集中的索引
+        """
         DistanceQueue = []
         if self.DistanceMode == 'Lp-Norm':
             for i in range(len(self.x_Train)):
@@ -195,20 +247,35 @@ class KNN:
         return DistanceQueue[:self.__K]
 
     def show_args(self):
+        """
+        显示模型参数
+        """
         print(len(self.x_Train), len(self.x_Train[0]))
         print(len(self.x_Valid), len(self.x_Valid[0]))
         print(len(self.x_Test), len(self.x_Test[0]))
         print(self.__K)
 
     def get_accuracy(self):
+        """
+        获取预测准确度
+        :return: 一个在0-1之间的浮点数，表示准确度
+        """
         if self.Accuracy is None:
             self.Accuracy = self.calculate_accuracy(self.y_Predict, self.y_Valid)
         return self.Accuracy
 
     def get_predict(self):
+        """
+        获取预测结果
+        :return: 一个二维列表，包含预测结果
+        """
         return self.y_Predict
 
     def run(self):
+        """
+        使用给定参数运行
+        :return: None
+        """
         self.load_train()
         self.load_validation()
         self.load_test()
@@ -233,6 +300,10 @@ class KNN:
 
 
 def Search():
+    """
+    搜索最优参数
+    :return: None
+    """
     KBegin, KEnd = 1, 31
     for Weight in [None, 'log', 'square', 'sigmoid', 'tan']:
         for Algo in ['L1', 'L2', 'L3', 'Cos']:
@@ -255,6 +326,13 @@ def Search():
 
 
 def Run(K, Weight, Algo):
+    """
+    使用给定参数进行预测
+    :param K: KNN模型的K值
+    :param Weight: 激活函数
+    :param Algo: 距离函数
+    :return: None
+    """
     begin = time.perf_counter()
     print(
         'Running KNN-Classify Model With Arg K = {}, Distance Algorithm is {}, Voting Weight is {}'.format(
@@ -274,5 +352,3 @@ def Run(K, Weight, Algo):
 if __name__ == '__main__':
     Search()
     # Run(10, False, 'Cos')
-
-    # 10721
