@@ -86,28 +86,27 @@
 
 - ### 伪代码流程图
   
-	```c
-func KNN_Classify(Sample , K):
-    
-    Input:
-    Samples: The set including our test samples
-    K: argument K for KNN Model
-        
-    Variable:
-    DistanceList: List
-    prediction: same type as Sample label
-    
-    Return value:
-    prediction: KNN model's prediction
-    	
-    for sample in Samples:
-    	calculate the distance from sample to target
-    	join the distance into DistanceList
-    sort the DistanceList from low to high
-    choose the nearest K samples
-    use the most frequent label as prediction
-    return prediction
-	```
+    ```c
+    func KNN_Classify(Sample , K):
+        Input:
+        Samples: The set including our test samples
+        K: argument K for KNN Model
+
+        Variable:
+        DistanceList: List
+        prediction: same type as Sample label
+
+        Return value:
+        prediction: KNN model's prediction
+
+        for sample in Samples:
+            calculate the distance from sample to target
+            join the distance into DistanceList
+        sort the DistanceList from low to high
+        choose the nearest K samples
+        use the most frequent label as prediction
+        return prediction
+    ```
 
 
 - ### 关键代码
@@ -165,6 +164,7 @@ func KNN_Classify(Sample , K):
   在经典KNN模型中，我们会选择使用距离的倒数来作为该样本的权重，也就是距离越近，这个样本的权重就越高，但很自然地我们就会想到一个问题，假如有一个噪音离我们需要预测的点很近，比如距离为0.001，那取完倒数以后这个噪音的权重就会是1000，过高的权重会导致其他样本的投票毫无意义，所以我们需要一个映射函数将正无穷定义域上的数值尽量的压缩一下，让权重高的依然有很大的“话语权”，但不至于“一票”决定结果，这样就可以消除一些噪音的干扰。
   
   对此，我尝试了四种函数试图找到一个符合该要求的结果，这四个函数分别如下：
+  
   $$
   x'=max(0,(1-\frac{2\times |x|}{10})^2) \ \ \ \ \ \ (二次函数)
   $$
