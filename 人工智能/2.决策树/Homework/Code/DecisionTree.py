@@ -30,8 +30,8 @@ class BaseDecisionTree(metaclass=ABCMeta):
     def evaluate_function(self, _data, key):
         pass
 
-    @abstractmethod
-    def branch_function(self, _data):
+    @staticmethod
+    def branch_function(_data):
         pass
 
     def __make_tree(self, _data):
@@ -42,6 +42,8 @@ class BaseDecisionTree(metaclass=ABCMeta):
             else:
                 test[data[-1]] += 1
         test_s = sorted(test.items(), key=lambda x: (x[1], x[0]), reverse=True)
+        # 判断是否只有一个特征
+        # 如果只有一个特征，则返回一个叶子节点，值为该特征
         if len(test_s) == 1:
             node = self.DecisionNode(-1)
             node.isLeafNode = True
@@ -49,22 +51,29 @@ class BaseDecisionTree(metaclass=ABCMeta):
             return node
         value_dict = {}
         for i in range(len(_data[0]) - 1):
+            # 通过反射获得子类重写的评估函数
             self.evaluate_function = getattr(self, 'evaluate_function')
+            # 对每一种类别进行评估
             value_dict.update({i: self.evaluate_function(_data, i)})
+        # 选择效果最好的特征
         value_dict = sorted(value_dict.items(), key=lambda x: (x[1], x[0]), reverse=True)
         key_feature = value_dict[0][0]
         kf_dict = {}
+        # 划分子数据集并去掉该特征
         for data in _data:
             if data[key_feature] not in kf_dict:
                 kf_dict.update({data.pop(key_feature): [1, [data]]})
             else:
                 kf_dict[data[key_feature]][1].append(data)
                 kf_dict[data[key_feature]][1][-1].pop(key_feature)
+        # 递归建立多叉树
         for k in kf_dict:
             kf_dict[k] = self.__make_tree(kf_dict[k][1])
+        # 建立节点，将之前建立的分支并入该节点的子节点
         node = self.DecisionNode(key_feature)
         node.branch = kf_dict
         node.value = test_s[0][0]
+        # 返回该节点
         return node
 
     def __make_binary_tree(self, _data):
@@ -298,9 +307,35 @@ class CART(BaseDecisionTree):
         return -gini_d_k
 
 
+def run_10_cross_validation(tree_class):
+    root_path = r'./lab2_dataset_2020AIlab/lab2_dataset'
+    accuracy = [0.0, []]
+    for i in range(10):
+        if tree_class == 'ID3':
+            tree = ID3(root_path, 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i))
+        elif tree_class == 'C45':
+            tree = C45(root_path, 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i))
+        elif tree_class == 'CART':
+            tree = CART(root_path, 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), False)
+        elif tree_class == 'CART_B':
+            tree = CART(root_path, 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), True)
+        else:
+            tree = None
+        tree.run()
+        tree.run_validation()
+        ac = tree.get_accuracy()
+        accuracy[0] += ac
+        accuracy[1].append(ac)
+    print(
+        'Tree Type: {}, Average Accuracy: {}, Min Accuracy: {}, Max Accuracy: {}'.format(tree_class, accuracy[0] / 10,
+                                                                                         min(accuracy[1]),
+                                                                                         max(accuracy[1])))
+
+
 if __name__ == '__main__':
-    tree = CART(r'./lab2_dataset_2020AIlab/lab2_dataset', 'train_0.csv', 'valid_0.csv', False)
+    # for i in ['ID3', 'C45', 'CART']:
+    #     run_10_cross_validation(i)
+    tree = ID3(r'./lab2_dataset_2020AIlab/lab2_dataset', 'ptr.csv', 'pva.csv')
     tree.run()
     tree.run_validation()
-    print(tree.get_accuracy())
-
+    print(tree.predict)
