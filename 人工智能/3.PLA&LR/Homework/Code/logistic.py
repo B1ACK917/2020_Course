@@ -5,7 +5,7 @@ import math
 
 
 class logistic:
-    def __init__(self, root_path, train_file, valid_file, learning_rate=1, it=10000):
+    def __init__(self, root_path, train_file, valid_file, learning_rate=1, it=10000, mode='BGD'):
         self.root = None
         self.rootPath = root_path
         self.trainFile = root_path + train_file
@@ -20,6 +20,7 @@ class logistic:
         self.__w = self.__ini_mat(len(self.trainDataFeature[0]), _func='0')
         self.__accList = []
         self.__argsList = []
+        self.__mode = mode
 
     def __load_data(self, _type, ex=False):
         data = None
@@ -85,16 +86,24 @@ class logistic:
         print('\rTraining Finished', flush=True)
 
     def train(self):
-        t = threading.Thread(target=self.__show_progress)
-        t.setDaemon(True)
-        t.start()
+        """
+        Logisitic训练
+        :return: None
+        """
+        t = threading.Thread(target=self.__show_progress)  # 声明一个显示训练进度的线程
+        t.setDaemon(True)  # 将显示进度的线程设置为守护线程
+        t.start()  # 运行该线程
         for self.it in range(1, self.max_iter + 1):
-            self.valid()
-            self.__accList.append(self.get_accuracy())
-            self.__argsList.append(self.__w)
-            for j in range(len(self.trainDataLabel)):
-                self.__optimize(self.trainDataFeature[j], self.trainDataLabel[j])
-        self.__w = self.__argsList[self.__accList.index(max(self.__accList))]
+            self.valid()  # 使用当前W在验证集上验证
+            self.__accList.append(self.get_accuracy())  # 获取验证准确率
+            self.__argsList.append(self.__w)  # 保存权重W
+            if self.__mode == 'BGD':  # BGD模式
+                for j in range(len(self.trainDataLabel)):
+                    self.__optimize(self.trainDataFeature[j], self.trainDataLabel[j])  # 更新权重
+            elif self.__mode == 'SGD':  # SGD模式
+                j = random.randint(0, len(self.trainDataLabel))  # 随机选择一个样本
+                self.__optimize(self.trainDataFeature[j], self.trainDataLabel[j])  # 更新权重
+        self.__w = self.__argsList[self.__accList.index(max(self.__accList))]  # 获取准确率最高的W作为模型权重
         print('\rTraining Finished', flush=True)
 
     def valid(self):
@@ -114,19 +123,25 @@ class logistic:
 
 def run_10_cross_validation():
     acc = []
+    tt = 0.0
     for i in range(10):
         print('Cross Validation {} Now Running'.format(i))
-        model = logistic('./data/', 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), it=1000)
+        model = logistic('./data/', 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), it=100, mode='SGD')
+        a = time.perf_counter()
         model.train()
+        tt += time.perf_counter() - a
         model.valid()
         acc.append(model.get_accuracy())
     print(acc)
     print(sum(acc) / len(acc))
+    print('Average time: {} s'.format(tt / 10 / 100))
 
 
 if __name__ == '__main__':
-    # model = logistic('./data/', 'train.csv', 'valid_0.csv', it=1000)
+    # model = logistic('./data/', 'train.csv', 'valid_0.csv', it=600, mode='SGD')
+    # a = time.perf_counter()
     # model.train()
+    # print('time:{} s'.format(time.perf_counter() - a))
     # model.valid()
     # print(model.get_accuracy())
     # print(model.get_w())

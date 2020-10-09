@@ -92,23 +92,27 @@ class pla:
         print('\rTraining Finished', flush=True)
 
     def train(self):
-        t = threading.Thread(target=self.__show_progress)
-        t.setDaemon(True)
-        t.start()
+        """
+        感知机训练函数
+        :return: None
+        """
+        t = threading.Thread(target=self.__show_progress)  # 声明一个显示训练进度的线程
+        t.setDaemon(True)  # 将显示进度的线程设置为守护线程
+        t.start()  # 运行该线程
         for self.it in range(1, self.max_iter + 1):
-            self.valid()
-            self.__accList.append(self.get_accuracy())
-            self.__argsList.append(self.__w)
-            predict = self.__run_1_epoch('train')
+            self.valid()  # 使用当前W在验证集上验证
+            self.__accList.append(self.get_accuracy())  # 获取验证准确率
+            self.__argsList.append(self.__w)  # 保存权重W
+            predict = self.__run_1_epoch('train')  # 进行一轮预测
             flag = True
             for j in range(len(predict)):
-                if predict[j] != self.trainDataLabel[j]:
+                if predict[j] != self.trainDataLabel[j]:  # 获取一个和预测不符的特征
                     flag = False
-                    self.__optimize(self.trainDataFeature[j], self.trainDataLabel[j])
+                    self.__optimize(self.trainDataFeature[j], self.trainDataLabel[j])  # 使用该特征更新W
                     break
-            if flag:
+            if flag:  # 如果全部预测正确，结束
                 break
-        self.__w = self.__argsList[self.__accList.index(max(self.__accList))]
+        self.__w = self.__argsList[self.__accList.index(max(self.__accList))]  # 获取准确率最高的W作为模型权重
         print('\rTraining Finished', flush=True)
 
     def valid(self):
@@ -130,7 +134,7 @@ def run_10_cross_validation():
     acc = []
     for i in range(10):
         print('Cross Validation {} Now Running'.format(i))
-        model = pla('./data/', 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), it=1000)
+        model = pla('./data/', 'train_{}.csv'.format(i), 'valid_{}.csv'.format(i), it=100)
         model.train()
         model.valid()
         acc.append(model.get_accuracy())
@@ -139,12 +143,12 @@ def run_10_cross_validation():
 
 
 if __name__ == '__main__':
-    model = pla('./data/', 'train_0.csv', 'valid_0.csv', it=100,learning_rate=1)
-    model.train()
-    model.valid()
-    print(model.get_accuracy())
-    print(model.get_w())
-    print(model.get_accl())
-    # run_10_cross_validation()
+    # model = pla('./data/', 'train_0.csv', 'valid_0.csv', it=600, learning_rate=0.001)
+    # model.train()
+    # model.valid()
+    # print(model.get_accuracy())
+    # print(model.get_w())
+    # print(model.get_accl())
+    run_10_cross_validation()
 # 21258
 # 26198
