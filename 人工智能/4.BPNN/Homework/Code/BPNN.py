@@ -1,6 +1,7 @@
 from dataLoader import dataLoader
 from dataCutter import dataCutter
 import numpy as np
+import time
 
 
 class MathFunc:
@@ -188,31 +189,33 @@ class BPNN:
 
     def fit(self, train_data, train_label):
         self.trainData = np.array(train_data)
-        self.trainData = Utils.ext_bias(self.trainData)
-        self.trainLabel = np.array(train_label)
-        self.__init_weight()
-        self.forward(self.trainData)
-        self.run_loss(self.trainLabel, self.superArgs['out'])
+        self.trainData = Utils.ext_bias(self.trainData)  # 生成增广矩阵
+        self.trainLabel = np.array(train_label)  # 制作真实值标签Label
+        self.__init_weight()  # 初始化权重
+        self.forward(self.trainData)  # 先进行一轮前向传播
+        self.run_loss(self.trainLabel, self.superArgs['out'])  # 根据预测结果计算loss
         print('Initial Loss: {}'.format(self.superArgs['loss']))
+        time_total = 0.0
         for i in range(1, self.maxIteration + 1):
-            if self.mode == 'BGD':
-                self.forward(self.trainData)
-                self.backward(self.trainData, self.trainLabel, self.superArgs['out'])
-                self.adapt()
-            elif self.mode == 'SGD':
-                d = np.random.randint(0, self.trainData.shape[0])
-                self.forward(self.trainData[d:d + 1])
-                self.backward(self.trainData[d:d + 1], self.trainLabel[d:d + 1], self.superArgs['out'])
-                self.adapt()
-            elif self.mode == 'MBGD':
-                m, n = self.trainData.shape[0] // self.batchSize, self.trainData.shape[0] % self.batchSize
+            begin_time = time.perf_counter()
+            if self.mode == 'BGD':  # BGD模式
+                self.forward(self.trainData)  # 所有训练样本进行前向传播
+                self.backward(self.trainData, self.trainLabel, self.superArgs['out'])  # 反向传播计算梯度
+                self.adapt()  # 根据梯度和学习率更新权重
+            elif self.mode == 'SGD':  # SGD模式
+                d = np.random.randint(0, self.trainData.shape[0])  # 随机获取一个样本
+                self.forward(self.trainData[d:d + 1])  # 前向传播该样本
+                self.backward(self.trainData[d:d + 1], self.trainLabel[d:d + 1], self.superArgs['out'])  # 反向传播计算梯度
+                self.adapt()  # 根据梯度和学习率更新权重
+            elif self.mode == 'MBGD':  # MBGD模式
+                m, n = self.trainData.shape[0] // self.batchSize, self.trainData.shape[0] % self.batchSize  # 计算轮数
                 for a in range(m):
-                    self.forward(self.trainData[a * self.batchSize:(a + 1) * self.batchSize])
+                    self.forward(self.trainData[a * self.batchSize:(a + 1) * self.batchSize])  # 读入batch_size个样本前向传播
                     self.backward(self.trainData[a * self.batchSize:(a + 1) * self.batchSize],
                                   self.trainLabel[a * self.batchSize:(a + 1) * self.batchSize],
-                                  self.superArgs['out'])
-                    self.adapt()
-                if n:
+                                  self.superArgs['out'])  # 反向传播计算梯度
+                    self.adapt()  # 根据梯度更新权重
+                if n:  # 如果无法batch_size无法整除样本数，将剩余的样本再进行一次前后向传播
                     self.forward(self.trainData[m * self.batchSize:m * self.batchSize + n])
                     self.backward(self.trainData[m * self.batchSize:m * self.batchSize + n],
                                   self.trainLabel[m * self.batchSize:m * self.batchSize + n],
@@ -220,10 +223,12 @@ class BPNN:
                     self.adapt()
             else:
                 pass
-            if not i % 10:
+            time_total += time.perf_counter() - begin_time
+            if not i % 10:  # 每十轮进行一次前向传播输出loss
                 self.forward(self.trainData)
                 self.run_loss(self.trainLabel, self.superArgs['out'])
-                print('Epoch {}, Loss: {}'.format(i, self.superArgs['loss']))
+                print('Epoch {}, Loss: {}, Average Epoch Time: {}s'.format(i, self.superArgs['loss'],
+                                                                           round(time_total / i, 3)))
 
     def run(self, dataset):
         dataset = np.array(dataset)
@@ -260,7 +265,11 @@ def run_10_cross_validation(from_disk=False):
 
 def set_model():
     model = BPNN(61, opt_mode='MBGD', max_iter=10000, init_func='Xavier', learning_rate=1e-5)
-    model.add(_type='FC', hide_width=1024)
+    model.add(_type='FC', hide_width=2048)
+    model.add(_type='ACT', active_func='sigmoid')
+    model.add(_type='FC', hide_width=2048)
+    model.add(_type='ACT', active_func='sigmoid')
+    model.add(_type='FC', hide_width=2048)
     model.add(_type='ACT', active_func='sigmoid')
     model.add(_type='OUT', active_func='relu', loss_func='mse')
     return model
@@ -277,3 +286,5 @@ if __name__ == '__main__':
     np.save('predict', c)
     with open('1.txt', 'w') as file:
         file.write(str(model.get_loss_history()))
+
+# 5556
