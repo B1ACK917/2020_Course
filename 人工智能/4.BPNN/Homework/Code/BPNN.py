@@ -95,6 +95,10 @@ class BPNN:
         self.lossHistory = []
 
     def __init_weight(self):
+        """
+        初始化模型权重
+        :return: None
+        """
         for key in self.superArgs:
             if key[-6:] == 'weight':
                 if self.weightInitializeFunc == '0':
@@ -105,6 +109,14 @@ class BPNN:
                     pass
 
     def add(self, _type='FC', active_func='sigmoid', hide_width=3, loss_func=None):
+        """
+        向模型中加入一层神经网络
+        :param _type: 该层类型，'FC'表示全连接层，'ACT'表示激活函数层，'OUT'表示输出层
+        :param active_func: 激活函数，默认使用'sigmoid'，可用'tanh','relu'代替
+        :param hide_width: 宽度，即该层包含多少个节点
+        :param loss_func: 当且仅当_type=='OUT'时会使用到，定义模型的损失函数
+        :return: None
+        """
         if _type == 'FC':
             weight = np.zeros((self.prevLayer.shape[1], hide_width))
             self.superArgs.update({'hide_{}_weight'.format(self.hiddenNums): weight})
@@ -131,6 +143,11 @@ class BPNN:
             raise TypeError('Unsupported type as {}'.format(_type))
 
     def forward(self, feature):
+        """
+        对feature进行一次前向传播
+        :param feature: 样本特征矩阵
+        :return: None
+        """
         for i in range(self.hiddenNums):
             if not i:
                 self.superArgs['hide_{}_out'.format(i)] = np.matmul(feature,
@@ -145,10 +162,23 @@ class BPNN:
         self.superArgs['out'] = self.superArgs['out_func'].f(self.superArgs['out'])
 
     def run_loss(self, y, p):
+        """
+        计算loss
+        :param y: 真实标签
+        :param p: 预测结果
+        :return: None
+        """
         self.superArgs['loss'] = self.superArgs['loss_func'].f(y, p)
         self.lossHistory.append(self.superArgs['loss'])
 
     def backward(self, feature, y, p):
+        """
+        反向传播
+        :param feature: 样本特征
+        :param y: 真实标签
+        :param p: 预测结果
+        :return: None
+        """
         self.grad['out_delta'] = self.superArgs['loss_func'].df(y, p) * self.superArgs['out_func'].df(p)
         self.grad['out_grad'] = np.matmul(np.transpose(self.superArgs['hide_{}_out'.format(self.hiddenNums - 1)]),
                                           self.grad['out_delta'])
@@ -183,11 +213,21 @@ class BPNN:
                     np.transpose(self.superArgs['hide_{}_out'.format(i - 1)]), self.grad['hide_{}_delta'.format(i)])
 
     def adapt(self):
+        """
+        根据反向传播后计算出的梯度更新权重
+        :return: None
+        """
         for key in self.superArgs:
             if key[-6:] == 'weight':
                 self.superArgs[key] += self.learningRate * self.grad['{}grad'.format(key[:-6])]
 
     def fit(self, train_data, train_label):
+        """
+        训练模型
+        :param train_data: 训练集
+        :param train_label: 训练集标签
+        :return: None
+        """
         self.trainData = np.array(train_data)
         self.trainData = Utils.ext_bias(self.trainData)  # 生成增广矩阵
         self.trainLabel = np.array(train_label)  # 制作真实值标签Label
@@ -231,16 +271,30 @@ class BPNN:
                                                                            round(time_total / i, 3)))
 
     def run(self, dataset):
+        """
+        使用当前参数进行一次预测
+        :param dataset: 需要预测的样本
+        :return: 预测结果->list
+        """
         dataset = np.array(dataset)
         dataset = Utils.ext_bias(dataset)
         self.forward(dataset)
         return self.superArgs['out']
 
     def get_loss_history(self):
+        """
+        获取训练过程中的loss变化
+        :return: list
+        """
         return self.lossHistory
 
 
 def run_10_cross_validation(from_disk=False):
+    """
+    十组交叉验证
+    :param from_disk: 是否读取已保存的十组数据
+    :return: None
+    """
     if not from_disk:
         data = dataLoader('data/train.csv').load()
         c = dataCutter(data, mode='10 cross')
@@ -264,12 +318,12 @@ def run_10_cross_validation(from_disk=False):
 
 
 def set_model():
+    """
+    构建模型
+    :return: model
+    """
     model = BPNN(61, opt_mode='MBGD', max_iter=10000, init_func='Xavier', learning_rate=1e-5)
-    model.add(_type='FC', hide_width=2048)
-    model.add(_type='ACT', active_func='sigmoid')
-    model.add(_type='FC', hide_width=2048)
-    model.add(_type='ACT', active_func='sigmoid')
-    model.add(_type='FC', hide_width=2048)
+    model.add(_type='FC', hide_width=128)
     model.add(_type='ACT', active_func='sigmoid')
     model.add(_type='OUT', active_func='relu', loss_func='mse')
     return model

@@ -36,6 +36,8 @@ class dataCutter:
 
 
 if __name__ == '__main__':
-    a = [1, 1, 2, 4, 66, 1, 34, 5, 6, 1, 1]
+    a = [1, 1, 2, 4, 66, 1, 34, 5, 6, 1, 1,2,31,4121,51,25,1,231,15,84,84,2,13,4,2]
     cutter = dataCutter(a, mode='10 cross')
-    cutter.run()
+    data=cutter.run()
+    for d in data:
+        print(d)

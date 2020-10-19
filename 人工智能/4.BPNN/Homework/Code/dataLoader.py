@@ -54,5 +54,6 @@ class dataLoader:
 
 if __name__ == '__main__':
     d = dataLoader('data/train.csv')
-    # d.test()
-    print(d.load()[:10])
+    data=d.load()
+    for i in range(5):
+        print(data[i])
