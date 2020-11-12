@@ -2,5 +2,5 @@
 
 RNN部分主导者
 
-[XCMZHP]: https://github.com/XCMZHP
+[XCMZHP](https://github.com/XCMZHP)
 
